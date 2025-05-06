@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
@@ -16,8 +17,8 @@ namespace NeveServer
         //impostare NON Copiare nelle property DB
         //impostare azioni di compilazione = CONTENUTO per le property DB
         static string dbName = Directory.GetParent(System.Reflection.Assembly.GetExecutingAssembly().Location).Parent.Parent.FullName.ToString() + @"\App_Data\Temperature.mdf";
-        static clsAltezzeController altezze;
-        static clsLocalitaController localita;
+        static TemperatureController altezze;
+        static CittaController localita;
         //
         static string address = "http://localhost:7777/";
         static HttpListener listener;
@@ -27,8 +28,8 @@ namespace NeveServer
             string msg = "";
             string risp = "";
             byte[] buffer;
-            altezze = new clsAltezzeController(dbName);
-            localita = new clsLocalitaController(dbName);
+            altezze = new TemperatureController(dbName);
+            localita = new CittaController(dbName);
             //
             listener = new HttpListener();
             HttpListenerContext context;
@@ -69,21 +70,34 @@ namespace NeveServer
             string aCapo = "\r\n";
             string risp = "";
             string[] comando = msg.Split(';');
-            switch (comando[0].ToLower())
+            try
             {
-                case "comandi":
-                    risp = "comandi;elenco;vedi<città>";
-                    break;
-                case "elenco":
-                    risp = localita.getAllLocalita();
-                    break;
-                case "vedi":
-                    risp=aCapo+ altezze.getTemperature(comando[1]);
-                    break;
-                default:
-                    risp = "Comando errato";
-                    break;
+                switch (comando[0].ToLower())
+                {
+                    case "comandi":
+                        risp = "comandi;elenco;vedi<città>;insert<citta><giorno><temp. min><temp. max>";
+                        break;
+                    case "elenco":
+                        risp = localita.getAllLocalita();
+                        break;
+                    case "vedi":
+                        if (string.IsNullOrWhiteSpace(comando[1])) throw new Exception("Per questo comando servono più argomenti");
+                        risp = aCapo + altezze.getTemperature(comando[1]);
+                        break;
+                    case "insert":
+                        if (string.IsNullOrWhiteSpace(comando[1])|| string.IsNullOrWhiteSpace(comando[2])|| string.IsNullOrWhiteSpace(comando[3])|| string.IsNullOrWhiteSpace(comando[4])) throw new Exception("Per questo comando servono più argomenti");
+                        risp = aCapo + altezze.insertTemperature(comando[1], comando[2], comando[3], comando[4]);
+                        break;
+                    default:
+                        risp = "Comando errato";
+                        break;
+                }
             }
+            catch (Exception ex)
+            {
+                risp = "Errore: " + ex.Message;
+            }
+          
             return risp;
         }
     }

@@ -59,8 +59,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Code\ADOSQLServer2017.cs" />
-    <Compile Include="Controller\clsAltezzeController.cs" />
-    <Compile Include="Controller\clsLocalitaController.cs" />
+    <Compile Include="Controller\GiornoController.cs" />
+    <Compile Include="Controller\TemperatureController.cs" />
+    <Compile Include="Controller\CittaController.cs" />
     <Compile Include="Model\clsAltezze.cs" />
     <Compile Include="Model\clsLocalita.cs" />
     <Compile Include="Program.cs" />
