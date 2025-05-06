@@ -65,14 +65,28 @@ namespace NeveServer.Controller
             //{
             //    giornoC.createGiorno(giorno);
             //}
-            cmd.Parameters.AddWithValue("@citta",idcitta );
-            cmd.Parameters.AddWithValue("@giorno", giornoC.getIdByGiorno(giorno));
-            cmd.Parameters.AddWithValue("@tmin", tmin);
-            cmd.Parameters.AddWithValue("@tmax", tmax);
+            if (!TemperaturaGiaPresente(idcitta, giornoC.getIdByGiorno(giorno)))
+            {
+                cmd.Parameters.AddWithValue("@citta", idcitta);
+                cmd.Parameters.AddWithValue("@giorno", giornoC.getIdByGiorno(giorno));
+                cmd.Parameters.AddWithValue("@tmin", tmin);
+                cmd.Parameters.AddWithValue("@tmax", tmax);
 
-            ado.EseguiNonQuery(cmd);
+                ado.EseguiNonQuery(cmd);
+                return getTemperature(citta);
+            }
+            else throw new Exception("Temperatura già inserita");
 
-            return getTemperature(citta);
+
+        }
+
+        private bool TemperaturaGiaPresente(int idcitta, int idgiorno)
+        {
+            SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM TEMPERATURE WHERE IDCITTA=@IDC AND IDGIORNO=@IDG");
+            cmd.Parameters.AddWithValue("@IDC", idcitta);
+            cmd.Parameters.AddWithValue("@IDG", idgiorno);
+            if (Convert.ToInt32(ado.EseguiScalar(cmd)) == 0) return false;
+            else return true;
         }
     }
 }
